@@ -20,7 +20,15 @@ ADD rootfs/etc/yum.repos.d/grafana.repo /etc/yum.repos.d/grafana.repo
 
 RUN rpm --import https://packagecloud.io/gpg.key && \
     rpm --import https://grafanarel.s3.amazonaws.com/RPM-GPG-KEY-grafana && \
-    yum install -y grafana && yum clean all
+    yum install -y git grafana && yum clean all
+
+#------------------------------------------------------------------------------
+# Install grafana plugins:
+#------------------------------------------------------------------------------
+
+RUN git clone https://github.com/grafana/grafana-plugins.git /tmp/grafana-plugins && \
+    cp -r /tmp/grafana-plugins/datasources/prometheus /usr/share/grafana/public/app/plugins/datasource/ && \
+    rm -rf /tmp/grafana-plugins
 
 #------------------------------------------------------------------------------
 # Populate root file system:
