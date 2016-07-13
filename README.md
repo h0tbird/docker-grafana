@@ -2,5 +2,5 @@
 Containerized grafana server
 
 ```
-docker run -it --rm -P h0tbird/grafana
+docker run -it --rm -P katosys/grafana
 ```
