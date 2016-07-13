@@ -16,7 +16,7 @@ ENV GOPATH="/go" \
 # Install grafana:
 #------------------------------------------------------------------------------
 
-RUN apk --no-cache add --update -t deps git go gcc musl-dev make g++ \
+RUN apk --no-cache add --update -t deps git go gcc musl-dev make g++ bash \
     && apk --no-cache add --update nodejs python \
     && go get -d github.com/grafana/grafana || true \
     && cd ${GOPATH}/src/github.com/grafana/grafana \
@@ -25,7 +25,9 @@ RUN apk --no-cache add --update -t deps git go gcc musl-dev make g++ \
     && ${GOPATH}/bin/godep restore \
     && go run build.go build \
     && npm install; npm install -g grunt-cli; grunt \
-    && apk del --purge deps && rm -rf /tmp/* /var/cache/apk/*
+    && bash -c "rm -rf /{tmp,root}/{*,.??*}" \
+    && bash -c "rm -rf /go/{bin,pkg}" \
+    && apk del --purge deps && rm -rf /var/cache/apk/*
 
 #------------------------------------------------------------------------------
 # Populate root file system:

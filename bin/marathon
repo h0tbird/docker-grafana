@@ -1,0 +1,55 @@
+#!/bin/bash
+
+#------------------------------------------------------------------------------
+# Sanity checks:
+#------------------------------------------------------------------------------
+
+[ $# -ne 1 ] && echo "Usage: $0 <start|deploy|destroy>" && exit 1
+[ -z "${MARATHON_URL}" ] && echo 'Ops! MARATHON_URL is not set' && exit 1
+
+#------------------------------------------------------------------------------
+# reparametrize reads a marathon.json file from stdin and replaces any docker
+# parameter which value is equal to '$1' with a new composed value of '$1=$2'.
+# The result is then written to stdout allowing to pipe it over and over.
+#------------------------------------------------------------------------------
+
+function reparametrize() {
+  jq --arg env "$1" --arg val "$1=$2" \
+  '(.container.docker.parameters[] |
+  select(.value == $env) | .value) |= $val'
+}
+
+#------------------------------------------------------------------------------
+# Generate a temporary reparametrized json file:
+#------------------------------------------------------------------------------
+
+TMPF=$(mktemp /tmp/marathon-grafana.XXX)
+
+cat marathon.json |
+  reparametrize 'GF_SECURITY_ADMIN_PASSWORD' "${GF_SECURITY_ADMIN_PASSWORD:-admin}" \
+> ${TMPF}
+
+trap "rm -f ${TMPF}" INT TERM HUP EXIT
+
+#------------------------------------------------------------------------------
+# start, deploy or destroy:
+#------------------------------------------------------------------------------
+
+case $1 in
+
+  start)
+    curl -sX POST -H "Content-type: application/json" \
+      ${MARATHON_URL}/v2/apps -d @${TMPF}
+    ;;
+
+  deploy)
+    curl -sX PUT -H "Content-type: application/json" \
+      ${MARATHON_URL}/v2/apps -d @${TMPF}
+    ;;
+
+  destroy)
+    curl -sX DELETE -H "Content-type: application/json" \
+      ${MARATHON_URL}/v2/apps/sys/grafana
+    ;;
+
+esac | jq '.'
