@@ -13,7 +13,7 @@
   "container": {
     "type": "DOCKER",
     "docker": {
-      "image": "katosys/grafana:v3.1.0",
+      "image": "katosys/grafana:v3.1.0-1",
       "network": "BRIDGE",
       "portMappings": [
         { "containerPort": 443, "hostPort": 0 }

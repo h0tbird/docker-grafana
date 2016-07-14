@@ -5,5 +5,5 @@
 Containerized grafana server
 
 ```
-docker run -it --rm -P katosys/grafana:v3.1.0
+docker run -it --rm -P katosys/grafana:v3.1.0-1
 ```
