@@ -13,7 +13,7 @@
   "container": {
     "type": "DOCKER",
     "docker": {
-      "image": "katosys/grafana",
+      "image": "katosys/grafana:v3.1.0",
       "network": "BRIDGE",
       "portMappings": [
         { "containerPort": 443, "hostPort": 0 }
@@ -29,7 +29,7 @@
         { "key": "volume-driver", "value": "rexray" },
         { "key": "volume", "value": "cell-1-dub-sys-grafana:/var/lib/grafana" }
       ],
-      "forcePullImage": true
+      "forcePullImage": false
     }
   },
   "healthChecks": [
