@@ -13,16 +13,23 @@
   "container": {
     "type": "DOCKER",
     "docker": {
-      "image": "grafana/grafana",
+      "image": "katosys/grafana",
       "network": "BRIDGE",
       "portMappings": [
-        { "containerPort": 3000, "hostPort": 0 }
+        { "containerPort": 443, "hostPort": 0 }
       ],
       "privileged": false,
       "parameters": [
-        { "key": "env", "value": "GF_SECURITY_ADMIN_PASSWORD" }
+        { "key": "env", "value": "GF_SERVER_HTTP_PORT=443" },
+        { "key": "env", "value": "GF_SERVER_PROTOCOL=https" },
+        { "key": "env", "value": "GF_SERVER_CERT_FILE=/mnt/mesos/sandbox/certs/server-crt.pem" },
+        { "key": "env", "value": "GF_SERVER_CERT_KEY=/mnt/mesos/sandbox/certs/server-key.pem" },
+        { "key": "env", "value": "GF_SERVER_ROOT_URL=http://grafana-sys.marathon" },
+        { "key": "env", "value": "GF_SECURITY_ADMIN_PASSWORD" },
+        { "key": "volume-driver", "value": "rexray" },
+        { "key": "volume", "value": "cell-1-dub-sys-grafana:/var/lib/grafana" }
       ],
-      "forcePullImage": false
+      "forcePullImage": true
     }
   },
   "healthChecks": [
@@ -34,6 +41,9 @@
       "protocol": "TCP",
       "timeoutSeconds": 5
     }
+  ],
+  "uris":  [
+    "file:///etc/certs/certs.tar.bz2"
   ],
   "upgradeStrategy": {
     "minimumHealthCapacity": 0,

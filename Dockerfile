@@ -2,32 +2,31 @@
 # Set the base image for subsequent instructions:
 #------------------------------------------------------------------------------
 
-FROM alpine:3.4
+FROM debian:jessie
 MAINTAINER Marc Villacorta Morera <marc.villacorta@gmail.com>
 
 #------------------------------------------------------------------------------
-# Environment variables:
+# Environment variables: https://grafanarel.s3.amazonaws.com
 #------------------------------------------------------------------------------
 
-ENV GOPATH="/go" \
-    VERSION="3.1.0"
+ENV GF_VERSION="3.1.0-1468321182" \
+    GF_URL="https://grafanarel.s3.amazonaws.com/builds"
 
 #------------------------------------------------------------------------------
 # Install grafana:
 #------------------------------------------------------------------------------
 
-RUN apk --no-cache add --update -t deps git go gcc musl-dev make g++ bash \
-    && apk --no-cache add --update nodejs python \
-    && go get -d github.com/grafana/grafana || true \
-    && cd ${GOPATH}/src/github.com/grafana/grafana \
-    && git checkout -b tags/v${VERSION} \
-    && go run build.go setup \
-    && ${GOPATH}/bin/godep restore \
-    && go run build.go build \
-    && npm install; npm install -g grunt-cli; grunt \
-    && bash -c "rm -rf /{tmp,root}/{*,.??*}" \
-    && bash -c "rm -rf /go/{bin,pkg}" \
-    && apk del --purge deps && rm -rf /var/cache/apk/*
+RUN apt-get update \
+    && apt-get -y --no-install-recommends install libfontconfig curl ca-certificates \
+    && apt-get clean \
+    && curl ${GF_URL}/grafana_${GF_VERSION}_amd64.deb > /tmp/grafana.deb \
+    && dpkg -i /tmp/grafana.deb \
+    && rm /tmp/grafana.deb \
+    && curl -L https://github.com/tianon/gosu/releases/download/1.7/gosu-amd64 > /usr/sbin/gosu \
+    && chmod +x /usr/sbin/gosu \
+    && apt-get remove -y curl \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
 
 #------------------------------------------------------------------------------
 # Populate root file system:
@@ -36,9 +35,8 @@ RUN apk --no-cache add --update -t deps git go gcc musl-dev make g++ bash \
 ADD rootfs /
 
 #------------------------------------------------------------------------------
-# Expose ports and entrypoint:
+# Expose ports, volumes and entrypoint:
 #------------------------------------------------------------------------------
 
-EXPOSE 3000
-WORKDIR "${GOPATH}/src/github.com/grafana/grafana"
-ENTRYPOINT ["./bin/grafana-server"]
+EXPOSE 80
+ENTRYPOINT ["./init"]
