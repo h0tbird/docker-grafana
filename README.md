@@ -1,6 +1,6 @@
-# docker-grafana
+# grafana
 
-[![Build Status](https://travis-ci.org/katosys/docker-grafana.svg?branch=master)](https://travis-ci.org/katosys/docker-grafana)
+[![Build Status](https://travis-ci.org/katosys/grafana.svg?branch=master)](https://travis-ci.org/katosys/grafana)
 
 Containerized grafana server
 
